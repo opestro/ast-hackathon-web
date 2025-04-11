@@ -246,22 +246,18 @@ const unreadNotificationsCount = computed(() => notifications.value.length);
 const toggleFullscreen = () => {
   if (!process.client) return;
   
-  // Target sidebar correctly - first direct child of the root layout
-  const sidebar = document.querySelector('.min-h-screen > div:first-child');
   const mainContent = document.querySelector('.flex-1');
-  const parentElement = document.querySelector('.p-6.md\\:p-8').parentElement;
+  const parentElement = document.querySelector('.p-6.md\\:p-8')?.parentElement;
   
   if (!isFullscreen.value) {
     // Enter fullscreen mode
     isFullscreen.value = true;
     
-    // Hide sidebar
-    if (sidebar) sidebar.style.display = 'none';
-    
-    // Force scrollable content
+    // Force scrollable content 
     if (mainContent) {
-      mainContent.style.overflowY = 'scroll';
+      mainContent.style.overflowY = 'auto';
       mainContent.style.height = '100vh';
+      mainContent.style.marginLeft = '0';
     }
     
     // Add parent class for proper positioning
@@ -281,21 +277,19 @@ const toggleFullscreen = () => {
       element.msRequestFullscreen();
     }
     
-    // Add fullscreen class
+    // Add fullscreen class directly to html element
     document.documentElement.classList.add('fullscreen-zone');
-    document.body.style.overflow = 'scroll';
-    setTimeout(() => window.scrollTo(0, 0), 100); // Delayed scroll to top
+    document.body.style.overflow = 'auto';
+    setTimeout(() => window.scrollTo(0, 0), 100);
   } else {
     // Exit fullscreen mode
     isFullscreen.value = false;
-    
-    // Show sidebar
-    if (sidebar) sidebar.style.display = '';
     
     // Reset main content
     if (mainContent) {
       mainContent.style.overflowY = '';
       mainContent.style.height = '';
+      // Restore margin - will be automatically handled by responsive classes
     }
     
     // Remove parent class
@@ -437,8 +431,7 @@ const handleFullscreenChange = () => {
     document.msFullscreenElement
   );
   
-  // Target sidebar and main content
-  const sidebar = document.querySelector('.min-h-screen > div:first-child');
+  // Target main content
   const mainContent = document.querySelector('.flex-1');
   const parentElement = document.querySelector('.p-6.md\\:p-8')?.parentElement;
   
@@ -447,13 +440,11 @@ const handleFullscreenChange = () => {
     isFullscreen.value = isInFullscreen;
     
     if (isFullscreen.value) {
-      // Hide sidebar
-      if (sidebar) sidebar.style.display = 'none';
-      
       // Force scrollable content
       if (mainContent) {
-        mainContent.style.overflowY = 'scroll';
+        mainContent.style.overflowY = 'auto';
         mainContent.style.height = '100vh';
+        mainContent.style.marginLeft = '0';
       }
       
       // Add parent class for proper positioning
@@ -462,16 +453,14 @@ const handleFullscreenChange = () => {
       }
       
       document.documentElement.classList.add('fullscreen-zone');
-      document.body.style.overflow = 'scroll';
-      setTimeout(() => window.scrollTo(0, 0), 100); // Delayed scroll to top
+      document.body.style.overflow = 'auto';
+      setTimeout(() => window.scrollTo(0, 0), 100);
     } else {
-      // Show sidebar
-      if (sidebar) sidebar.style.display = '';
-      
       // Reset main content
       if (mainContent) {
         mainContent.style.overflowY = '';
         mainContent.style.height = '';
+        // Margin will be restored automatically by responsive classes
       }
       
       // Remove parent class
@@ -509,7 +498,7 @@ const handleFullscreenChange = () => {
 :global(.fullscreen-zone #__nuxt),
 :global(.fullscreen-zone .min-h-screen),
 :global(.fullscreen-zone .flex-1) {
-  overflow-y: scroll !important;
+  overflow-y: auto !important;
   overflow-x: hidden !important;
   height: 100% !important;
   max-height: 100% !important;
@@ -523,6 +512,13 @@ const handleFullscreenChange = () => {
   width: 100% !important;
   max-width: 100% !important;
   overflow: visible !important;
+}
+
+/* Ensure content is actually scrollable in fullscreen */
+:global(.fullscreen-zone) #__nuxt,
+:global(.fullscreen-zone) .min-h-screen {
+  position: absolute !important;
+  width: 100% !important;
 }
 
 :global(.dark .fullscreen-zone) {
