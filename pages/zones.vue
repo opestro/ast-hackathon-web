@@ -25,7 +25,7 @@
     />
     
     <!-- Main Content -->
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
+    <div class="grid  grid-cols lg:grid-cols-4 gap-6">
        <!-- Zone Map Component -->
        <ZoneMap 
        :robots="activeZone.robots"
