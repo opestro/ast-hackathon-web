@@ -98,36 +98,64 @@
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-purple-500 dark:text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
             </svg>
-            Manual Control
+            Servo Motor Control
           </h2>
-          <div class="flex flex-col items-center">
-            <button class="w-12 h-12 bg-gray-100/80 dark:bg-gray-900/80 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-xl flex items-center justify-center transform hover:scale-105 transition-all shadow-lg">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600 dark:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 15l7-7 7 7" />
-              </svg>
-            </button>
-            <div class="flex justify-between w-full my-3">
-              <button class="w-12 h-12 bg-gray-100/80 dark:bg-gray-900/80 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-xl flex items-center justify-center transform hover:scale-105 transition-all shadow-lg">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600 dark:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          
+          <!-- Gripper Control -->
+          <div class="mb-6">
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">Gripper Control</p>
+            <div class="flex items-center justify-between space-x-4">
+              <button 
+                @click="sendCommand('gripper_open')" 
+                class="flex-1 bg-gray-100/80 dark:bg-gray-900/80 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-300/50 dark:hover:border-blue-500/30 text-gray-700 dark:text-white py-3 rounded-xl text-sm flex items-center justify-center border border-gray-200/60 dark:border-white/5 transition-all">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
                 </svg>
+                Open Gripper
               </button>
-              <button class="w-16 h-16 bg-red-600/90 hover:bg-red-700 rounded-full flex items-center justify-center transform hover:scale-105 transition-all shadow-lg shadow-red-500/20 border border-red-500/30">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12" />
+              <button 
+                @click="sendCommand('gripper_close')" 
+                class="flex-1 bg-gray-100/80 dark:bg-gray-900/80 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-300/50 dark:hover:border-blue-500/30 text-gray-700 dark:text-white py-3 rounded-xl text-sm flex items-center justify-center border border-gray-200/60 dark:border-white/5 transition-all">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h12m0 0l-4-4m4 4l-4 4m8 4H8m0 0l4 4m-4-4l4-4" />
                 </svg>
-              </button>
-              <button class="w-12 h-12 bg-gray-100/80 dark:bg-gray-900/80 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-xl flex items-center justify-center transform hover:scale-105 transition-all shadow-lg">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600 dark:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                </svg>
+                Close Gripper
               </button>
             </div>
-            <button class="w-12 h-12 bg-gray-100/80 dark:bg-gray-900/80 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-xl flex items-center justify-center transform hover:scale-105 transition-all shadow-lg">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600 dark:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
+          </div>
+          
+          <!-- Arm Control -->
+          <div>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">Arm Control</p>
+            <div class="flex flex-col items-center">
+              <button 
+                @click="sendCommand('arm_up')" 
+                class="w-32 bg-gray-100/80 dark:bg-gray-900/80 hover:bg-green-50 dark:hover:bg-green-900/20 hover:border-green-300/50 dark:hover:border-green-500/30 text-gray-700 dark:text-white py-3 rounded-xl text-sm flex items-center justify-center transform hover:scale-105 transition-all shadow-lg border border-gray-200/60 dark:border-white/5 mb-3">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+                </svg>
+                Arm Up
+              </button>
+              
+              <button 
+                @click="sendCommand('arm_down')" 
+                class="w-32 bg-gray-100/80 dark:bg-gray-900/80 hover:bg-green-50 dark:hover:bg-green-900/20 hover:border-green-300/50 dark:hover:border-green-500/30 text-gray-700 dark:text-white py-3 rounded-xl text-sm flex items-center justify-center transform hover:scale-105 transition-all shadow-lg border border-gray-200/60 dark:border-white/5">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+                Arm Down
+              </button>
+            </div>
+          </div>
+          
+          <!-- Command Status -->
+          <div class="mt-4 pt-4 border-t border-gray-200/60 dark:border-gray-700/30">
+            <div class="flex items-center justify-between">
+              <p class="text-xs text-gray-500 dark:text-gray-400">Last Command:</p>
+              <span class="text-xs" :class="commandStatus.success ? 'text-green-500' : 'text-red-500'">
+                {{ commandStatus.message || 'No command sent yet' }}
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -366,6 +394,12 @@ import { ref, onMounted } from 'vue';
 
 // RFID cards state
 const rfidCards = ref([]);
+// Command status
+const commandStatus = ref({
+  success: false,
+  message: '',
+  timestamp: null
+});
 
 // Only add animations when in browser environment
 onMounted(() => {
@@ -395,6 +429,129 @@ onMounted(() => {
   // Set up polling for new RFID data
   setInterval(fetchRfidData, 5000);
 });
+
+// Send command to control servos
+async function sendCommand(cmd) {
+  try {
+    // Update status to show we're sending command
+    commandStatus.value = {
+      success: true,
+      message: `Sending: ${cmd}...`,
+      timestamp: Date.now()
+    };
+    
+    // Send the command to our API
+    const response = await fetch('/api/servo-control', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ command: cmd }),
+    });
+    
+    const data = await response.json();
+    
+    // Update status based on response
+    if (response.ok) {
+      commandStatus.value = {
+        success: true,
+        message: `Queued: ${formatCommandName(cmd)}`,
+        timestamp: Date.now()
+      };
+      
+      // Start polling for status updates
+      if (data.data && data.data.id) {
+        pollCommandStatus(data.data.id, cmd);
+      }
+    } else {
+      throw new Error(data.message || 'Failed to send command');
+    }
+  } catch (error) {
+    console.error('Error sending command:', error);
+    commandStatus.value = {
+      success: false,
+      message: `Error: ${error.message}`,
+      timestamp: Date.now()
+    };
+  }
+}
+
+// Poll for command status updates
+async function pollCommandStatus(commandId, cmd, attempts = 0) {
+  // Max polling attempts (30 seconds total with 3-second intervals)
+  const maxAttempts = 10;
+  
+  if (attempts >= maxAttempts) {
+    commandStatus.value = {
+      success: false,
+      message: `Timeout: ${formatCommandName(cmd)}`,
+      timestamp: Date.now()
+    };
+    return;
+  }
+  
+  try {
+    // Wait 3 seconds before checking status
+    await new Promise(resolve => setTimeout(resolve, 3000));
+    
+    // Check command status
+    const response = await fetch(`/api/command-status?id=${commandId}`);
+    
+    if (!response.ok) {
+      throw new Error('Failed to check command status');
+    }
+    
+    const data = await response.json();
+    
+    if (data.success && data.data) {
+      const status = data.data.status;
+      
+      if (status === 'completed') {
+        commandStatus.value = {
+          success: true,
+          message: `Completed: ${formatCommandName(cmd)}`,
+          timestamp: Date.now()
+        };
+        return;
+      } else if (status === 'executing') {
+        commandStatus.value = {
+          success: true,
+          message: `Executing: ${formatCommandName(cmd)}...`,
+          timestamp: Date.now()
+        };
+      } else {
+        commandStatus.value = {
+          success: true,
+          message: `Pending: ${formatCommandName(cmd)}...`,
+          timestamp: Date.now()
+        };
+      }
+      
+      // Continue polling
+      pollCommandStatus(commandId, cmd, attempts + 1);
+    } else {
+      throw new Error(data.message || 'Invalid status response');
+    }
+  } catch (error) {
+    console.error('Error checking command status:', error);
+    commandStatus.value = {
+      success: false,
+      message: `Status error: ${error.message}`,
+      timestamp: Date.now()
+    };
+  }
+}
+
+// Format command name for display
+function formatCommandName(cmd) {
+  switch(cmd) {
+    case 'gripper_open': return 'Gripper opened';
+    case 'gripper_close': return 'Gripper closed';
+    case 'arm_up': return 'Arm moved up';
+    case 'arm_down': return 'Arm moved down';
+    default: return cmd;
+  }
+}
 
 // Helper functions for RFID cards
 function getCardColorClass(type) {

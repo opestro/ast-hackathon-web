@@ -5,6 +5,7 @@
 #include <WiFi.h>
 #include <HTTPClient.h>
 #include <SPIFFS.h>
+#include <ArduinoJson.h>
 
 #define SS_PIN 5
 #define RST_PIN 22
@@ -13,11 +14,16 @@
 const char* ssid = "OPPO A78";
 const char* password = "123456789";
 const char* webhookUrl = "https://robotstock.cscclub.space/api/rfid-webhook";
+const char* pollCommandsUrl = "https://robotstock.cscclub.space/api/esp32/poll-commands";
+const char* completeCommandUrl = "https://robotstock.cscclub.space/api/esp32/complete-command";
 
 MFRC522 mfrc522(SS_PIN, RST_PIN);
 Servo monServo1;
 Servo monServo2;
 WebServer server(80);
+
+unsigned long lastPollTime = 0;
+const unsigned long pollInterval = 2000; // Poll every 2 seconds
 
 void setup() {
     Serial.begin(115200);
@@ -93,9 +99,7 @@ void sendRfidDataToWebhook(String rfidData, String cardType) {
     if (WiFi.status() == WL_CONNECTED) {
         HTTPClient http;
         
-        // Format the JSON payload with a proper timestamp (milliseconds since 1970)
-        // Note: ESP32 doesn't have a real-time clock by default, so this is uptime in ms
-        // For a real application, you might want to add an RTC module or use NTP
+        // Format the JSON payload
         String jsonPayload = "{\"rfid\":\"" + rfidData + "\",\"type\":\"" + cardType + "\",\"timestamp\":" + String(millis()) + "}";
         
         http.begin(webhookUrl);
@@ -139,9 +143,90 @@ String determineCardType(String rfidData) {
     }
 }
 
+void pollForCommands() {
+    if (WiFi.status() == WL_CONNECTED) {
+        HTTPClient http;
+        
+        http.begin(pollCommandsUrl);
+        
+        int httpResponseCode = http.GET();
+        
+        if (httpResponseCode > 0) {
+            String response = http.getString();
+            Serial.println("Poll response: " + response);
+            
+            // Parse JSON response
+            DynamicJsonDocument doc(1024);
+            DeserializationError error = deserializeJson(doc, response);
+            
+            if (!error) {
+                // Check if we have a command to execute
+                if (doc.containsKey("command")) {
+                    String command = doc["command"].as<String>();
+                    String commandId = doc["id"].as<String>();
+                    
+                    Serial.println("Executing command: " + command + " (ID: " + commandId + ")");
+                    
+                    // Execute the command
+                    if (command == "gripper_open") {
+                        monServo1.write(0);
+                    } else if (command == "gripper_close") {
+                        monServo1.write(120);
+                    } else if (command == "arm_up") {
+                        monServo2.write(120);
+                    } else if (command == "arm_down") {
+                        monServo2.write(0);
+                    }
+                    
+                    // Mark the command as completed
+                    markCommandAsCompleted(commandId);
+                }
+            } else {
+                Serial.println("JSON parsing error");
+            }
+        } else {
+            Serial.print("Error polling for commands: ");
+            Serial.println(httpResponseCode);
+        }
+        
+        http.end();
+    }
+}
+
+void markCommandAsCompleted(String commandId) {
+    if (WiFi.status() == WL_CONNECTED) {
+        HTTPClient http;
+        
+        // Format the JSON payload
+        String jsonPayload = "{\"id\":\"" + commandId + "\"}";
+        
+        http.begin(completeCommandUrl);
+        http.addHeader("Content-Type", "application/json");
+        
+        int httpResponseCode = http.POST(jsonPayload);
+        
+        if (httpResponseCode > 0) {
+            String response = http.getString();
+            Serial.println("Command marked as completed. Response: " + response);
+        } else {
+            Serial.print("Error marking command as completed: ");
+            Serial.println(httpResponseCode);
+        }
+        
+        http.end();
+    }
+}
+
 void loop() {
     // Handle HTTP requests
     server.handleClient();
+    
+    // Poll for commands at regular intervals
+    unsigned long currentTime = millis();
+    if (currentTime - lastPollTime >= pollInterval) {
+        lastPollTime = currentTime;
+        pollForCommands();
+    }
     
     // Vérification RFID
     if (mfrc522.PICC_IsNewCardPresent() && mfrc522.PICC_ReadCardSerial()) {
