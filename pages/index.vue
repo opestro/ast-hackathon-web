@@ -72,21 +72,21 @@
             <div v-for="(card, index) in rfidCards" :key="index" 
                  class="flex items-center justify-between bg-gray-100/80 dark:bg-gray-900/60 rounded-lg p-3">
               <div class="flex items-center">
-                <div class="h-4 w-4 rounded-full" 
-                     :class="getCardColorClass(card.type)" 
-                     :style="getCardBoxShadow(card.type)"></div>
+                <div class="h-4 w-4 rounded-full" :class="getCardColorClass(card.type)"></div>
                 <span class="text-sm text-gray-800 dark:text-white ml-2">{{ card.type }}</span>
               </div>
               <div class="flex space-x-2">
-                <span class="text-gray-500 dark:text-gray-400 text-xs px-2 py-1 rounded-full bg-gray-200/60 dark:bg-gray-800/60">
-                  {{ card.timestamp | timeAgo }}
+                <span 
+                  class="text-gray-500 dark:text-gray-400 text-xs px-2 py-1 rounded-full bg-gray-200/60 dark:bg-gray-800/60">
+                  {{ formatTimeAgo(card.timestamp) }}
                 </span>
-                <span class="text-gray-500 dark:text-gray-400 text-xs px-2 py-1 rounded-full bg-gray-200/60 dark:bg-gray-800/60">
-                  ID: {{ card.rfid | truncate }}
+                <span 
+                  class="text-gray-500 dark:text-gray-400 text-xs px-2 py-1 rounded-full bg-gray-200/60 dark:bg-gray-800/60">
+                  ID: {{ truncateText(card.rfid, 8) }}
                 </span>
               </div>
             </div>
-            <div v-if="rfidCards.length === 0" class="flex items-center justify-center p-4 bg-gray-100/80 dark:bg-gray-900/60 rounded-lg">
+            <div v-if="!rfidCards.length" class="flex items-center justify-center p-4 bg-gray-100/80 dark:bg-gray-900/60 rounded-lg">
               <div class="text-sm text-gray-500 dark:text-gray-400">No RFID cards detected yet</div>
             </div>
           </div>
@@ -362,7 +362,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue';
+import { ref, onMounted } from 'vue';
 
 // RFID cards state
 const rfidCards = ref([]);
@@ -398,39 +398,54 @@ onMounted(() => {
 
 // Helper functions for RFID cards
 function getCardColorClass(type) {
+  if (!type) return 'bg-gradient-to-br from-gray-400 to-gray-600';
+  
   if (type.includes('Red')) {
-    return 'bg-gradient-to-br from-red-400 to-red-600';
+    return 'bg-gradient-to-br from-red-400 to-red-600 shadow-md shadow-red-500/20';
   } else if (type.includes('Blue')) {
-    return 'bg-gradient-to-br from-blue-400 to-blue-600';
+    return 'bg-gradient-to-br from-blue-400 to-blue-600 shadow-md shadow-blue-500/20';
   } else if (type.includes('Yellow')) {
-    return 'bg-gradient-to-br from-yellow-400 to-yellow-600';
+    return 'bg-gradient-to-br from-yellow-400 to-yellow-600 shadow-md shadow-yellow-500/20';
   } else if (type.includes('Green')) {
-    return 'bg-gradient-to-br from-green-400 to-green-600';
+    return 'bg-gradient-to-br from-green-400 to-green-600 shadow-md shadow-green-500/20';
   } else {
-    return 'bg-gradient-to-br from-gray-400 to-gray-600';
+    return 'bg-gradient-to-br from-gray-400 to-gray-600 shadow-md shadow-gray-500/20';
   }
 }
 
-function getCardBoxShadow(type) {
-  if (type.includes('Red')) {
-    return 'box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.2)';
-  } else if (type.includes('Blue')) {
-    return 'box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.2)';
-  } else if (type.includes('Yellow')) {
-    return 'box-shadow: 0 4px 6px -1px rgba(250, 204, 21, 0.2)';
-  } else if (type.includes('Green')) {
-    return 'box-shadow: 0 4px 6px -1px rgba(34, 197, 94, 0.2)';
+// Format timestamp to "time ago" format
+function formatTimeAgo(timestamp) {
+  if (!timestamp) return '';
+  
+  const now = Date.now();
+  const seconds = Math.floor((now - timestamp) / 1000);
+  
+  if (seconds < 60) {
+    return `${seconds}s ago`;
+  } else if (seconds < 3600) {
+    return `${Math.floor(seconds / 60)}m ago`;
+  } else if (seconds < 86400) {
+    return `${Math.floor(seconds / 3600)}h ago`;
   } else {
-    return '';
+    return `${Math.floor(seconds / 86400)}d ago`;
   }
+}
+
+// Truncate text
+function truncateText(text, maxLength) {
+  if (!text) return '';
+  return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
 }
 
 // Fetch RFID data from API
 async function fetchRfidData() {
   try {
-    const response = await fetch('https://robotstock.cscclub.space/api/rfid-data');
+    const response = await fetch('/api/rfid-data');
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
     const data = await response.json();
-    rfidCards.value = data.slice(0, 4); // Limit to last 4 detected cards
+    rfidCards.value = Array.isArray(data) ? data.slice(0, 4) : []; // Limit to last 4 detected cards
   } catch (error) {
     console.error('Error fetching RFID data:', error);
   }
