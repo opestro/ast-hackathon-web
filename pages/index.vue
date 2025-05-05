@@ -60,42 +60,34 @@
           </div>
         </div>
         
-        <!-- Color Detection -->
+        <!-- RFID Detection -->
         <div class="bg-white/80 dark:bg-gray-800/40 backdrop-blur-xl rounded-xl p-5 shadow-lg border border-gray-200/80 dark:border-white/5">
           <h2 class="text-base font-medium mb-5 text-gray-800 dark:text-white flex items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-blue-500 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-purple-500 dark:text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
             </svg>
-            Color Detection
+            RFID Detection
           </h2>
           <div class="space-y-3">
-            <div class="flex items-center justify-between bg-gray-100/80 dark:bg-gray-900/60 rounded-lg p-3">
+            <div v-for="(card, index) in rfidCards" :key="index" 
+                 class="flex items-center justify-between bg-gray-100/80 dark:bg-gray-900/60 rounded-lg p-3">
               <div class="flex items-center">
-                <div class="h-4 w-4 rounded-full bg-gradient-to-br from-red-400 to-red-600 mr-2 shadow-md shadow-red-500/20"></div>
-                <span class="text-sm text-gray-800 dark:text-white">Red</span>
+                <div class="h-4 w-4 rounded-full" 
+                     :class="getCardColorClass(card.type)" 
+                     :style="getCardBoxShadow(card.type)"></div>
+                <span class="text-sm text-gray-800 dark:text-white ml-2">{{ card.type }}</span>
               </div>
-              <span class="text-gray-500 dark:text-gray-400 text-xs px-2 py-1 rounded-full bg-gray-200/60 dark:bg-gray-800/60">4 packages</span>
+              <div class="flex space-x-2">
+                <span class="text-gray-500 dark:text-gray-400 text-xs px-2 py-1 rounded-full bg-gray-200/60 dark:bg-gray-800/60">
+                  {{ card.timestamp | timeAgo }}
+                </span>
+                <span class="text-gray-500 dark:text-gray-400 text-xs px-2 py-1 rounded-full bg-gray-200/60 dark:bg-gray-800/60">
+                  ID: {{ card.rfid | truncate }}
+                </span>
+              </div>
             </div>
-            <div class="flex items-center justify-between bg-gray-100/80 dark:bg-gray-900/60 rounded-lg p-3">
-              <div class="flex items-center">
-                <div class="h-4 w-4 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 mr-2 shadow-md shadow-blue-500/20"></div>
-                <span class="text-sm text-gray-800 dark:text-white">Blue</span>
-              </div>
-              <span class="text-gray-500 dark:text-gray-400 text-xs px-2 py-1 rounded-full bg-gray-200/60 dark:bg-gray-800/60">7 packages</span>
-            </div>
-            <div class="flex items-center justify-between bg-gray-100/80 dark:bg-gray-900/60 rounded-lg p-3">
-              <div class="flex items-center">
-                <div class="h-4 w-4 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 mr-2 shadow-md shadow-yellow-500/20"></div>
-                <span class="text-sm text-gray-800 dark:text-white">Yellow</span>
-              </div>
-              <span class="text-gray-500 dark:text-gray-400 text-xs px-2 py-1 rounded-full bg-gray-200/60 dark:bg-gray-800/60">5 packages</span>
-            </div>
-            <div class="flex items-center justify-between bg-gray-100/80 dark:bg-gray-900/60 rounded-lg p-3">
-              <div class="flex items-center">
-                <div class="h-4 w-4 rounded-full bg-gradient-to-br from-green-400 to-green-600 mr-2 shadow-md shadow-green-500/20"></div>
-                <span class="text-sm text-gray-800 dark:text-white">Green</span>
-              </div>
-              <span class="text-gray-500 dark:text-gray-400 text-xs px-2 py-1 rounded-full bg-gray-200/60 dark:bg-gray-800/60">8 packages</span>
+            <div v-if="rfidCards.length === 0" class="flex items-center justify-center p-4 bg-gray-100/80 dark:bg-gray-900/60 rounded-lg">
+              <div class="text-sm text-gray-500 dark:text-gray-400">No RFID cards detected yet</div>
             </div>
           </div>
         </div>
@@ -370,7 +362,10 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue';
+import { onMounted, ref } from 'vue';
+
+// RFID cards state
+const rfidCards = ref([]);
 
 // Only add animations when in browser environment
 onMounted(() => {
@@ -393,6 +388,79 @@ onMounted(() => {
     }
   `;
   document.head.appendChild(style);
+  
+  // Fetch initial RFID data
+  fetchRfidData();
+  
+  // Set up polling for new RFID data
+  setInterval(fetchRfidData, 5000);
 });
+
+// Helper functions for RFID cards
+function getCardColorClass(type) {
+  if (type.includes('Red')) {
+    return 'bg-gradient-to-br from-red-400 to-red-600';
+  } else if (type.includes('Blue')) {
+    return 'bg-gradient-to-br from-blue-400 to-blue-600';
+  } else if (type.includes('Yellow')) {
+    return 'bg-gradient-to-br from-yellow-400 to-yellow-600';
+  } else if (type.includes('Green')) {
+    return 'bg-gradient-to-br from-green-400 to-green-600';
+  } else {
+    return 'bg-gradient-to-br from-gray-400 to-gray-600';
+  }
+}
+
+function getCardBoxShadow(type) {
+  if (type.includes('Red')) {
+    return 'box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.2)';
+  } else if (type.includes('Blue')) {
+    return 'box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.2)';
+  } else if (type.includes('Yellow')) {
+    return 'box-shadow: 0 4px 6px -1px rgba(250, 204, 21, 0.2)';
+  } else if (type.includes('Green')) {
+    return 'box-shadow: 0 4px 6px -1px rgba(34, 197, 94, 0.2)';
+  } else {
+    return '';
+  }
+}
+
+// Fetch RFID data from API
+async function fetchRfidData() {
+  try {
+    const response = await fetch('https://robotstock.cscclub.space/api/rfid-data');
+    const data = await response.json();
+    rfidCards.value = data.slice(0, 4); // Limit to last 4 detected cards
+  } catch (error) {
+    console.error('Error fetching RFID data:', error);
+  }
+}
+</script>
+
+<script>
+// Filters
+export default {
+  filters: {
+    timeAgo(timestamp) {
+      const now = Date.now();
+      const seconds = Math.floor((now - timestamp) / 1000);
+      
+      if (seconds < 60) {
+        return `${seconds}s ago`;
+      } else if (seconds < 3600) {
+        return `${Math.floor(seconds / 60)}m ago`;
+      } else if (seconds < 86400) {
+        return `${Math.floor(seconds / 3600)}h ago`;
+      } else {
+        return `${Math.floor(seconds / 86400)}d ago`;
+      }
+    },
+    truncate(value) {
+      if (!value) return '';
+      const str = value.toString();
+      return str.length > 8 ? str.substring(0, 8) + '...' : str;
+    }
+  }
+}
 </script>
 
